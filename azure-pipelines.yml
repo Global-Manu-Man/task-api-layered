@@ -24,18 +24,18 @@ stages:
   # STAGE 1: BUILD & TEST
   # ========================================
   - stage: Build
-    displayName: '🔨 Build & Test'
+    displayName: 'Build & Test'
     jobs:
       - job: BuildJob
         displayName: 'Compilar y Probar'
         steps:
           # Paso 1: Checkout del código
           - checkout: self
-            displayName: '📥 Checkout código'
+            displayName: 'Checkout código'
 
           # Paso 2: Configurar Java 17
           - task: JavaToolInstaller@0
-            displayName: '☕ Instalar Java 17'
+            displayName: 'Instalar Java 17'
             inputs:
               versionSpec: '17'
               jdkArchitectureOption: 'x64'
@@ -43,7 +43,7 @@ stages:
 
           # Paso 3: Cache de Maven (acelera builds)
           - task: Cache@2
-            displayName: '📦 Cache Maven'
+            displayName: 'Cache Maven'
             inputs:
               key: 'maven | "$(Agent.OS)" | **/pom.xml'
               restoreKeys: |
@@ -52,7 +52,7 @@ stages:
 
           # Paso 4: Compilar con Maven
           - task: Maven@4
-            displayName: '🔨 Maven Build'
+            displayName: 'Maven Build'
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'clean package'
@@ -65,7 +65,7 @@ stages:
 
           # Paso 5: Publicar artefacto JAR
           - task: PublishBuildArtifacts@1
-            displayName: '📤 Publicar Artefacto'
+            displayName: 'Publicar Artefacto'
             inputs:
               PathtoPublish: '$(System.DefaultWorkingDirectory)/target/*.jar'
               ArtifactName: 'task-api-jar'
@@ -73,7 +73,7 @@ stages:
 
           # Paso 6: Copiar archivos para deploy
           - task: CopyFiles@2
-            displayName: '📋 Copiar archivos de deploy'
+            displayName: 'Copiar archivos de deploy'
             inputs:
               SourceFolder: '$(System.DefaultWorkingDirectory)'
               Contents: |
@@ -82,7 +82,7 @@ stages:
               TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
           - task: PublishBuildArtifacts@1
-            displayName: '📤 Publicar para Deploy'
+            displayName: 'Publicar para Deploy'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: 'drop'
@@ -92,7 +92,7 @@ stages:
   # STAGE 2: DEPLOY TO AZURE
   # ========================================
   - stage: Deploy
-    displayName: '🚀 Deploy to Azure'
+    displayName: 'Deploy to Azure'
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
@@ -106,11 +106,11 @@ stages:
                 # Descargar artefacto
                 - download: current
                   artifact: drop
-                  displayName: '📥 Descargar artefacto'
+                  displayName: 'Descargar artefacto'
 
                 # Deploy a Azure App Service
                 - task: AzureWebApp@1
-                  displayName: '🌐 Deploy a App Service'
+                  displayName: 'Deploy a App Service'
                   inputs:
                     azureSubscription: 'tu-azure-subscription'  # ← Cambiar
                     appType: 'webAppLinux'
