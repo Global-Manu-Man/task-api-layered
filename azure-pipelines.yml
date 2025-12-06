@@ -112,7 +112,7 @@ stages:
                 - task: AzureWebApp@1
                   displayName: 'Deploy a App Service'
                   inputs:
-                    azureSubscription: 'tu-azure-subscription'  # ← Cambiar
+                    azureSubscription: 'azure-connection'  # ← Cambiar
                     appType: 'webAppLinux'
                     appName: 'task-api-app'  # ← Nombre de tu App Service
                     package: '$(Pipeline.Workspace)/drop/target/*.jar'
