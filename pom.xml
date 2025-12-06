@@ -60,12 +60,12 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-        <!-- Para producción con PostgreSQL (descomentar) -->
-<!-- 		<dependency>
+		
+		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency> -->
+		</dependency>
 		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
