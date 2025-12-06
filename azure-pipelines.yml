@@ -1,5 +1,6 @@
 # azure-pipelines.yml
 # Pipeline CI/CD para Task API - Spring Boot
+# Usando Self-Hosted Agent
 
 trigger:
   branches:
@@ -11,14 +12,12 @@ trigger:
       - README.md
       - docs/*
 
+# === USA TU AGENTE LOCAL ===
 pool:
-  vmImage: 'ubuntu-latest'
+  name: 'my-agent'
 
 variables:
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   JAVA_VERSION: '17'
-  # === CONFIGURACION DE AZURE ===
   azureServiceConnection: 'azure-task-api'
   appServiceName: 'task-api-emmanuel'
 
@@ -44,47 +43,28 @@ stages:
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
-          # Paso 3: Cache de Maven (acelera builds)
-          - task: Cache@2
-            displayName: 'Cache Maven'
-            inputs:
-              key: 'maven | "$(Agent.OS)" | **/pom.xml'
-              restoreKeys: |
-                maven | "$(Agent.OS)"
-              path: $(MAVEN_CACHE_FOLDER)
-
-          # Paso 4: Compilar con Maven
+          # Paso 3: Compilar con Maven
           - task: Maven@4
             displayName: 'Maven Build'
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'clean package'
-              options: '-DskipTests=false $(MAVEN_OPTS)'
-              publishJUnitResults: true
-              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              options: '-DskipTests'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
               mavenVersionOption: 'Default'
 
-          # Paso 5: Publicar artefacto JAR
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publicar Artefacto'
-            inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
-              ArtifactName: 'task-api-jar'
-              publishLocation: 'Container'
-
-          # Paso 6: Copiar archivos para deploy
+          # Paso 4: Copiar archivos para deploy
           - task: CopyFiles@2
-            displayName: 'Copiar archivos de deploy'
+            displayName: 'Copiar JAR'
             inputs:
-              SourceFolder: '$(System.DefaultWorkingDirectory)'
-              Contents: |
-                target/*.jar
+              SourceFolder: '$(System.DefaultWorkingDirectory)/target'
+              Contents: '*.jar'
               TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
+          # Paso 5: Publicar artefacto
           - task: PublishBuildArtifacts@1
-            displayName: 'Publicar para Deploy'
+            displayName: 'Publicar Artefacto'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: 'drop'
@@ -96,7 +76,7 @@ stages:
   - stage: Deploy
     displayName: 'Deploy to Azure'
     dependsOn: Build
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: succeeded()
     jobs:
       - deployment: DeployToAzure
         displayName: 'Deploy a Azure App Service'
@@ -117,5 +97,5 @@ stages:
                     azureSubscription: '$(azureServiceConnection)'
                     appType: 'webAppLinux'
                     appName: '$(appServiceName)'
-                    package: '$(Pipeline.Workspace)/drop/target/*.jar'
+                    package: '$(Pipeline.Workspace)/drop/*.jar'
                     runtimeStack: 'JAVA|17-java17'
