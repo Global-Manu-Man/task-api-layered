@@ -18,6 +18,9 @@ variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   JAVA_VERSION: '17'
+  # === CONFIGURACION DE AZURE ===
+  azureServiceConnection: 'azure-task-api'
+  appServiceName: 'task-api-emmanuel'
 
 stages:
   # ========================================
@@ -29,9 +32,9 @@ stages:
       - job: BuildJob
         displayName: 'Compilar y Probar'
         steps:
-          # Paso 1: Checkout del código
+          # Paso 1: Checkout del codigo
           - checkout: self
-            displayName: 'Checkout código'
+            displayName: 'Checkout codigo'
 
           # Paso 2: Configurar Java 17
           - task: JavaToolInstaller@0
@@ -67,7 +70,7 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: 'Publicar Artefacto'
             inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/target/*.jar'
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
               ArtifactName: 'task-api-jar'
               publishLocation: 'Container'
 
@@ -78,7 +81,6 @@ stages:
               SourceFolder: '$(System.DefaultWorkingDirectory)'
               Contents: |
                 target/*.jar
-                Dockerfile
               TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
           - task: PublishBuildArtifacts@1
@@ -112,8 +114,8 @@ stages:
                 - task: AzureWebApp@1
                   displayName: 'Deploy a App Service'
                   inputs:
-                    azureSubscription: 'azure-connection'  # ← Cambiar
+                    azureSubscription: '$(azureServiceConnection)'
                     appType: 'webAppLinux'
-                    appName: 'task-api-app'  # ← Nombre de tu App Service
+                    appName: '$(appServiceName)'
                     package: '$(Pipeline.Workspace)/drop/target/*.jar'
                     runtimeStack: 'JAVA|17-java17'
