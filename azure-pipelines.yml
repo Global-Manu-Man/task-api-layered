@@ -1,6 +1,5 @@
 # azure-pipelines.yml
 # Pipeline CI/CD para Task API - Spring Boot
-# Usando Self-Hosted Agent
 
 trigger:
   branches:
@@ -12,12 +11,10 @@ trigger:
       - README.md
       - docs/*
 
-# === USA TU AGENTE LOCAL ===
 pool:
   name: 'my-agent'
 
 variables:
-  JAVA_VERSION: '17'
   azureServiceConnection: 'azure-task-api'
   appServiceName: 'task-api-emmanuel'
 
@@ -35,23 +32,23 @@ stages:
           - checkout: self
             displayName: 'Checkout codigo'
 
-          # Paso 2: Configurar Java 17
-          - task: JavaToolInstaller@0
-            displayName: 'Instalar Java 17'
-            inputs:
-              versionSpec: '17'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
+          # Paso 2: Verificar Java instalado
+          - script: |
+              echo "=== Verificando Java ==="
+              java -version
+              echo "=== Verificando Maven ==="
+              mvn -version
+            displayName: 'Verificar Java y Maven'
 
-          # Paso 3: Compilar con Maven
+          # Paso 3: Compilar con Maven (usa Java del sistema)
           - task: Maven@4
             displayName: 'Maven Build'
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'clean package'
               options: '-DskipTests'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.17'
+              javaHomeOption: 'Path'
+              jdkDirectory: '$(JAVA_HOME)'
               mavenVersionOption: 'Default'
 
           # Paso 4: Copiar archivos para deploy
@@ -85,12 +82,10 @@ stages:
           runOnce:
             deploy:
               steps:
-                # Descargar artefacto
                 - download: current
                   artifact: drop
                   displayName: 'Descargar artefacto'
 
-                # Deploy a Azure App Service
                 - task: AzureWebApp@1
                   displayName: 'Deploy a App Service'
                   inputs:
