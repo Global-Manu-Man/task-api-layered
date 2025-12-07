@@ -50,16 +50,67 @@ public class TaskResponse {
         return new TaskResponse(task);
     }
 
-    // Getters y Setters
+    // ========================================
+    // GETTERS
+    // ========================================
+    
     public Long getId() {
         return id;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public String getStatusDisplayName() {
+        return statusDisplayName;
+    }
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
+    }
+
+    // ========================================
+    // SETTERS
+    // ========================================
+    
     public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public void setStatusDisplayName(String statusDisplayName) {
+        this.statusDisplayName = statusDisplayName;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setUpdatedDate(LocalDateTime updatedDate) {
+        this.updatedDate = updatedDate;
     }
 }
