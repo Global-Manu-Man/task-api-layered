@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### DB ###
+*.env
+.env
+.env.example
+.env.local
+.env.dev
+.env.prod
+.env.test
+.env.*.local
+db.sqlite
+database.sqlite
+*.db
+*.sqlitedb
+*.sqlite
+*.log
+logs/
+*.log.*
+
