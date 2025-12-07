@@ -15,7 +15,7 @@ API REST para la gestión de tareas desarrollada con **Spring Boot 4.0** y **Jav
 | **Swagger UI** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui.html](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui.html) |
 | **OpenAPI Spec** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/api-docs](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/api-docs) |
 | **Azure DevOps** | [https://dev.azure.com/sandoval-org/task-api](https://dev.azure.com/sandoval-org/task-api) |
-
+| **Azure SpringDoc** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui/index.html) |
 ---
 
 ## 📖 Tabla de Contenidos
