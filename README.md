@@ -2,8 +2,9 @@
 
 API REST para la gestión de tareas desarrollada con **Spring Boot 4.0** y **Java 17**.
 
-[![Build Status](https://dev.azure.com/sandoval-org/task-api/_apis/build/status/task-api?branchName=main)](https://dev.azure.com/sandoval-org/task-api/_build)
-[![Azure App Service](https://img.shields.io/badge/Azure-Deployed-blue)](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net)
+[![Build Status](https://img.shields.io/badge/Coolify-Deployed-brightgreen)](https://tasks.pakal.solutions)
+[![Grafana](https://img.shields.io/badge/Grafana-Monitoring-orange)](https://grafana.pakal.solutions)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-red)](https://prometheus.pakal.solutions)
 
 ---
 
@@ -11,11 +12,15 @@ API REST para la gestión de tareas desarrollada con **Spring Boot 4.0** y **Jav
 
 | Recurso | URL |
 |---------|-----|
-| **API Base** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net) |
-| **Swagger UI** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui.html](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui.html) |
-| **OpenAPI Spec** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/api-docs](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/api-docs) |
-| **Azure DevOps** | [https://dev.azure.com/sandoval-org/task-api](https://dev.azure.com/sandoval-org/task-api) |
-| **Azure SpringDoc** | [https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net/swagger-ui/index.html) |
+| **API Base** | [https://tasks.pakal.solutions](https://tasks.pakal.solutions) |
+| **Swagger UI** | [https://tasks.pakal.solutions/swagger-ui.html](https://tasks.pakal.solutions/swagger-ui.html) |
+| **OpenAPI Spec** | [https://tasks.pakal.solutions/api-docs](https://tasks.pakal.solutions/api-docs) |
+| **Health Check** | [https://tasks.pakal.solutions/actuator/health](https://tasks.pakal.solutions/actuator/health) |
+| **Métricas Prometheus** | [https://tasks.pakal.solutions/actuator/prometheus](https://tasks.pakal.solutions/actuator/prometheus) |
+| **Grafana Dashboard** | [https://grafana.pakal.solutions](https://grafana.pakal.solutions) |
+| **Prometheus** | [https://prometheus.pakal.solutions](https://prometheus.pakal.solutions) |
+| **GitHub Repository** | [https://github.com/tu-usuario/task-api](https://github.com/tu-usuario/task-api) |
+
 ---
 
 ## 📖 Tabla de Contenidos
@@ -30,7 +35,10 @@ API REST para la gestión de tareas desarrollada con **Spring Boot 4.0** y **Jav
 8. [Arquitectura y Patrones de Diseño](#-arquitectura-y-patrones-de-diseño)
 9. [Estructura del Proyecto](#-estructura-del-proyecto)
 10. [CI/CD Pipeline](#-cicd-pipeline)
-11. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+11. [Infraestructura y Hosting](#-infraestructura-y-hosting)
+12. [Monitoreo y Observabilidad](#-monitoreo-y-observabilidad)
+13. [Alertas](#-alertas)
+14. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 
 ---
 
@@ -38,12 +46,12 @@ API REST para la gestión de tareas desarrollada con **Spring Boot 4.0** y **Jav
 
 ### Opción 1: HTTPS
 ```bash
-git clone https://dev.azure.com/sandoval-org/task-api/_git/task-api
+git clone https://github.com/tu-usuario/task-api.git
 ```
 
 ### Opción 2: SSH
 ```bash
-git clone git@ssh.dev.azure.com:v3/sandoval-org/task-api/task-api
+git clone git@github.com:tu-usuario/task-api.git
 ```
 
 ### Entrar al directorio
@@ -62,6 +70,7 @@ Antes de construir y ejecutar el proyecto, asegúrate de tener instalado:
 | **Java JDK** | 17 o superior | `java -version` |
 | **Maven** | 3.9+ | `mvn -version` |
 | **Git** | 2.x | `git --version` |
+| **Docker** | 20.x+ | `docker --version` |
 
 ### Instalar Java 17
 
@@ -143,7 +152,7 @@ mvn spring-boot:run
 # Perfil de desarrollo (H2)
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-# Perfil de producción (SQL Server)
+# Perfil de producción (PostgreSQL)
 mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
@@ -152,8 +161,22 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 # Desarrollo (H2)
 java -jar target/yaganaste.com-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
 
-# Producción (SQL Server)
+# Producción (PostgreSQL)
 java -jar target/yaganaste.com-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+### Opción 4: Con Docker
+```bash
+# Construir imagen
+docker build -t task-api .
+
+# Ejecutar contenedor
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host:5432/db \
+  -e SPRING_DATASOURCE_USERNAME=user \
+  -e SPRING_DATASOURCE_PASSWORD=pass \
+  task-api
 ```
 
 ### Verificar que está corriendo
@@ -162,7 +185,7 @@ Una vez iniciada la aplicación, verifica que funciona:
 
 ```bash
 # Health check
-curl http://localhost:8080/api/tasks
+curl http://localhost:8080/actuator/health
 
 # O abre en el navegador
 http://localhost:8080/swagger-ui.html
@@ -175,6 +198,8 @@ http://localhost:8080/swagger-ui.html
 | API Tasks | http://localhost:8080/api/tasks |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
 | OpenAPI JSON | http://localhost:8080/api-docs |
+| Health Check | http://localhost:8080/actuator/health |
+| Métricas Prometheus | http://localhost:8080/actuator/prometheus |
 | H2 Console (solo dev) | http://localhost:8080/h2-console |
 
 ---
@@ -193,8 +218,8 @@ El proyecto utiliza **Spring Profiles** para manejar diferentes configuraciones 
         ┌───────────────┼───────────────┐
         ▼               ▼               ▼
    ┌─────────┐    ┌──────────┐    ┌─────────┐
-   │  Local  │    │  Azure   │    │  Tests  │
-   │  (IDE)  │    │App Service│   │  (mvn)  │
+   │  Local  │    │  Coolify │    │  Tests  │
+   │  (IDE)  │    │ (Hetzner)│    │  (mvn)  │
    └────┬────┘    └────┬─────┘    └────┬────┘
         │              │               │
         ▼              ▼               ▼
@@ -204,8 +229,8 @@ El proyecto utiliza **Spring Profiles** para manejar diferentes configuraciones 
         │              │               │
         ▼              ▼               ▼
    ┌─────────┐   ┌──────────┐    ┌─────────┐
-   │   H2    │   │SQL Server│    │   H2    │
-   │ memoria │   │  Azure   │    │ memoria │
+   │   H2    │   │PostgreSQL│    │   H2    │
+   │ memoria │   │ Railway  │    │ memoria │
    └─────────┘   └──────────┘    └─────────┘
 ```
 
@@ -215,253 +240,86 @@ El proyecto utiliza **Spring Profiles** para manejar diferentes configuraciones 
 src/main/resources/
 ├── application.properties        # Configuración principal (selección de perfil)
 ├── application-dev.properties    # Desarrollo local (H2)
-├── application-prod.properties   # Producción (Azure SQL Server)
+├── application-prod.properties   # Producción (PostgreSQL Railway)
 └── application-test.properties   # Testing (H2)
 ```
 
 ---
 
-### 📄 application.properties (Principal)
+### 📄 application-prod.properties (Producción)
 
 ```properties
 # =====================================================
-# TASK API - CONFIGURACIÓN PRINCIPAL
-# Spring Boot 4.0
+# TASK API - PRODUCCIÓN (PostgreSQL - Railway)
 # =====================================================
 
-# ========== PERFIL ACTIVO ==========
-# - dev: H2 en memoria (desarrollo local)
-# - prod: SQL Server en Azure (producción)
-# - test: H2 en memoria (pruebas)
-spring.profiles.active=${SPRING_PROFILES_ACTIVE:dev}
-
-# ========== APLICACIÓN ==========
-spring.application.name=task-api
-server.port=${PORT:8080}
-
-# ========== SWAGGER / OPENAPI ==========
-springdoc.api-docs.enabled=true
-springdoc.api-docs.path=/api-docs
-springdoc.swagger-ui.enabled=true
-springdoc.swagger-ui.path=/swagger-ui.html
-springdoc.swagger-ui.operationsSorter=method
-
-# ========== JACKSON (JSON) ==========
-spring.jackson.serialization.write-dates-as-timestamps=false
-spring.jackson.date-format=yyyy-MM-dd'T'HH:mm:ss
-```
-
----
-
-### 📄 application-dev.properties (Desarrollo)
-
-```properties
-# =====================================================
-# TASK API - DESARROLLO LOCAL (H2 Database)
-# Activar con: spring.profiles.active=dev
-# =====================================================
-
-# ========== H2 DATABASE (En memoria) ==========
-spring.datasource.url=jdbc:h2:mem:taskdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.username=sa
-spring.datasource.password=
-spring.datasource.driver-class-name=org.h2.Driver
+# ========== POSTGRESQL CONNECTION ==========
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 # ========== JPA / HIBERNATE ==========
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-# ========== H2 CONSOLE ==========
-spring.h2.console.enabled=true
-spring.h2.console.path=/h2-console
-
-# ========== SWAGGER ==========
-springdoc.api-docs.enabled=true
-springdoc.swagger-ui.enabled=true
-
-# ========== LOGGING (Detallado) ==========
-logging.level.root=INFO
-logging.level.com.tasks=DEBUG
-logging.level.org.hibernate.SQL=DEBUG
-```
-
----
-
-### 📄 application-prod.properties (Producción - Azure SQL Server)
-
-```properties
-# =====================================================
-# TASK API - PRODUCCIÓN (Azure SQL Server)
-# Activar con: SPRING_PROFILES_ACTIVE=prod
-# =====================================================
-
-# ========== SQL SERVER CONNECTION ==========
-spring.datasource.url=jdbc:sqlserver://${DB_SERVER}.database.windows.net:1433;database=${DB_NAME};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-# ========== JPA / HIBERNATE ==========
-# IMPORTANTE: En producción usar 'none' o 'validate', NUNCA 'update' o 'create'
-spring.jpa.hibernate.ddl-auto=none
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.format_sql=false
 
 # ========== CONNECTION POOL (HikariCP) ==========
 spring.datasource.hikari.maximum-pool-size=10
 spring.datasource.hikari.minimum-idle=2
 spring.datasource.hikari.idle-timeout=30000
-spring.datasource.hikari.connection-timeout=30000
-spring.datasource.hikari.max-lifetime=1800000
+
+# ========== ACTUATOR + PROMETHEUS METRICS ==========
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=always
+management.metrics.export.prometheus.enabled=true
+management.metrics.tags.application=task-api
+management.metrics.tags.environment=production
 
 # ========== SWAGGER ==========
 springdoc.api-docs.enabled=true
 springdoc.swagger-ui.enabled=true
-
-# ========== MANEJO DE RECURSOS NO ENCONTRADOS ==========
-spring.web.resources.add-mappings=false
-spring.mvc.throw-exception-if-no-handler-found=true
+springdoc.swagger-ui.path=/swagger-ui.html
 
 # ========== LOGGING ==========
 logging.level.root=INFO
 logging.level.com.tasks=INFO
-logging.level.org.hibernate.SQL=WARN
-logging.level.org.springframework.web=WARN
 ```
-
----
-
-### 📄 application-test.properties (Testing)
-
-```properties
-# =====================================================
-# TASK API - TESTING (H2 Database)
-# Activar con: spring.profiles.active=test
-# =====================================================
-
-# ========== H2 DATABASE (En memoria para tests) ==========
-spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.username=sa
-spring.datasource.password=
-spring.datasource.driver-class-name=org.h2.Driver
-
-# ========== JPA / HIBERNATE ==========
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=false
-
-# ========== H2 CONSOLE (Deshabilitado en tests) ==========
-spring.h2.console.enabled=false
-
-# ========== SWAGGER (Deshabilitado en tests) ==========
-springdoc.api-docs.enabled=false
-springdoc.swagger-ui.enabled=false
-
-# ========== LOGGING (Mínimo para tests) ==========
-logging.level.root=WARN
-logging.level.com.tasks=INFO
-logging.level.org.hibernate.SQL=WARN
-```
-
----
-
-### Resumen de Configuración por Perfil
-
-| Configuración | dev | prod | test |
-|---------------|-----|------|------|
-| **Base de datos** | H2 (memoria) | Azure SQL Server | H2 (memoria) |
-| **ddl-auto** | `create-drop` | `none` | `create-drop` |
-| **H2 Console** | ✅ Habilitado | ❌ N/A | ❌ Deshabilitado |
-| **Swagger** | ✅ Habilitado | ✅ Habilitado | ❌ Deshabilitado |
-| **SQL Logging** | DEBUG | WARN | WARN |
 
 ---
 
 ## 🗄️ Base de Datos
 
-### Arquitectura de Base de Datos
+### PostgreSQL (Producción - Railway)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Tu Código Java                          │
-│        (Entity, Repository, Service, Controller)            │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     JPA / Hibernate                          │
-│              (Abstracción de Base de Datos)                 │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-    ┌──────────┐   ┌──────────┐    ┌──────────┐
-    │    H2    │   │SQL Server│    │PostgreSQL│
-    │  (Dev)   │   │  (Prod)  │    │ (Futuro) │
-    └──────────┘   └──────────┘    └──────────┘
-```
+El proyecto utiliza **PostgreSQL** alojado en **Railway** para el ambiente de producción.
 
-### Azure SQL Server (Producción)
+| Configuración | Valor |
+|---------------|-------|
+| **Proveedor** | Railway |
+| **Driver** | PostgreSQL |
+| **Puerto** | 5432 |
+| **Dialect** | PostgreSQLDialect |
 
-La aplicación en producción utiliza **Azure SQL Database**.
+### Variables de Entorno para Producción
 
-#### Variables de Entorno en Azure App Service
-
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `SPRING_PROFILES_ACTIVE` | Perfil activo | `prod` |
-| `DB_SERVER` | Nombre del servidor SQL | `task-api-sql-server` |
-| `DB_NAME` | Nombre de la base de datos | `taskdb` |
-| `DB_USERNAME` | Usuario de la BD | `sqladmin` |
-| `DB_PASSWORD` | Contraseña de la BD | `********` |
-
-#### Script de Creación de Tabla (SQL Server)
-
-```sql
--- ========== CREAR TABLA TASKS ==========
-CREATE TABLE tasks (
-    id BIGINT IDENTITY(1,1) PRIMARY KEY,
-    title NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX) NULL,
-    status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
-    creation_date DATETIME2 NOT NULL DEFAULT GETDATE(),
-    updated_date DATETIME2 NOT NULL DEFAULT GETDATE(),
-    
-    CONSTRAINT CHK_tasks_status CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED'))
-);
-GO
-
--- ========== ÍNDICES ==========
-CREATE INDEX IX_tasks_status ON tasks(status);
-CREATE INDEX IX_tasks_creation_date ON tasks(creation_date DESC);
-GO
-
--- ========== DATOS DE PRUEBA ==========
-INSERT INTO tasks (title, description, status, creation_date, updated_date) VALUES
-('Revisar documentación del proyecto', 'Leer y analizar la documentación técnica existente', 'PENDING', GETDATE(), GETDATE()),
-('Configurar entorno de desarrollo', 'Instalar JDK 17, Maven y configurar IDE', 'COMPLETED', GETDATE(), GETDATE()),
-('Implementar autenticación JWT', 'Agregar seguridad con tokens JWT al API', 'IN_PROGRESS', GETDATE(), GETDATE()),
-('Escribir pruebas unitarias', 'Crear tests para los servicios principales', 'PENDING', GETDATE(), GETDATE()),
-('Desplegar en servidor de pruebas', 'Realizar deployment en ambiente de QA', 'PENDING', GETDATE(), GETDATE());
-GO
+```bash
+SPRING_DATASOURCE_URL=jdbc:postgresql://host:port/database
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=your_password
+SPRING_PROFILES_ACTIVE=prod
 ```
 
 ### H2 Database (Desarrollo y Tests)
 
-Para desarrollo local se usa H2 en memoria, lo que permite:
-- Desarrollo rápido sin dependencias externas
-- Cada reinicio comienza con una base de datos limpia
-- Consola web para inspeccionar datos: http://localhost:8080/h2-console
-
-#### Configuración de H2 Console
+Para desarrollo local se usa H2 en memoria:
 
 | Campo | Valor |
 |-------|-------|
 | JDBC URL | `jdbc:h2:mem:taskdb` |
 | Username | `sa` |
 | Password | (vacío) |
+| Console | http://localhost:8080/h2-console |
 
 ---
 
@@ -480,6 +338,15 @@ Para desarrollo local se usa H2 en memoria, lo que permite:
 | `GET` | `/api/tasks/search?q={term}` | Buscar tareas |
 | `GET` | `/api/tasks/stats` | Obtener estadísticas |
 
+### Endpoints de Monitoreo
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/actuator/health` | Health check |
+| `GET` | `/actuator/info` | Información de la app |
+| `GET` | `/actuator/prometheus` | Métricas para Prometheus |
+| `GET` | `/actuator/metrics` | Métricas generales |
+
 ### Estados Disponibles
 
 | Estado | Descripción |
@@ -492,7 +359,7 @@ Para desarrollo local se usa H2 en memoria, lo que permite:
 
 **Crear una tarea:**
 ```bash
-curl -X POST http://localhost:8080/api/tasks \
+curl -X POST https://tasks.pakal.solutions/api/tasks \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mi primera tarea",
@@ -503,37 +370,12 @@ curl -X POST http://localhost:8080/api/tasks \
 
 **Obtener todas las tareas:**
 ```bash
-curl http://localhost:8080/api/tasks
+curl https://tasks.pakal.solutions/api/tasks
 ```
 
-**Actualizar una tarea:**
+**Health check:**
 ```bash
-curl -X PUT http://localhost:8080/api/tasks/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Tarea actualizada",
-    "status": "IN_PROGRESS"
-  }'
-```
-
-**Eliminar una tarea:**
-```bash
-curl -X DELETE http://localhost:8080/api/tasks/1
-```
-
-**Filtrar por estado:**
-```bash
-curl http://localhost:8080/api/tasks/status/PENDING
-```
-
-**Buscar tareas:**
-```bash
-curl "http://localhost:8080/api/tasks/search?q=documentación"
-```
-
-**Obtener estadísticas:**
-```bash
-curl http://localhost:8080/api/tasks/stats
+curl https://tasks.pakal.solutions/actuator/health
 ```
 
 ---
@@ -579,7 +421,7 @@ curl http://localhost:8080/api/tasks/stats
 ```
 task-api/
 ├── 📄 pom.xml                              # Configuración Maven
-├── 📄 azure-pipelines.yml                  # Pipeline CI/CD
+├── 📄 Dockerfile                           # Imagen Docker para Coolify
 ├── 📄 README.md                            # Este archivo
 │
 ├── 📂 src/main/java/com/tasks/.../
@@ -596,8 +438,19 @@ task-api/
 ├── 📂 src/main/resources/
 │   ├── 📄 application.properties           # Configuración principal
 │   ├── 📄 application-dev.properties       # Desarrollo (H2)
-│   ├── 📄 application-prod.properties      # Producción (SQL Server)
+│   ├── 📄 application-prod.properties      # Producción (PostgreSQL)
 │   └── 📄 application-test.properties      # Testing (H2)
+│
+├── 📂 prometheus/
+│   └── 📄 prometheus.yml                   # Configuración de Prometheus
+│
+├── 📂 grafana/
+│   └── 📂 provisioning/
+│       ├── 📂 datasources/
+│       │   └── 📄 datasource.yml           # Conexión a Prometheus
+│       └── 📂 dashboards/
+│           ├── 📄 dashboards.yml
+│           └── 📄 spring-boot-dashboard.json
 │
 └── 📂 src/test/java/
     ├── 📄 TaskControllerTest.java          # Tests unitarios
@@ -608,16 +461,230 @@ task-api/
 
 ## 🔄 CI/CD Pipeline
 
-El proyecto utiliza **Azure Pipelines** para integración y despliegue continuo.
+El proyecto migró de **Azure DevOps** a **GitHub + Coolify** para CI/CD.
+
+### Pipeline Anterior (Azure DevOps)
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   COMMIT    │───▶│    BUILD    │───▶│   DEPLOY    │
-│   (main)    │    │   & TEST    │    │   (Azure)   │
+│   (Azure)   │    │   & TEST    │    │   (Azure)   │
 └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-- **Azure DevOps Pipeline**: [https://dev.azure.com/sandoval-org/task-api/_build](https://dev.azure.com/sandoval-org/task-api/_build)
+### Pipeline Actual (GitHub + Coolify)
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  GIT PUSH   │───▶│   COOLIFY   │───▶│   HETZNER   │
+│  (GitHub)   │    │  Dockerfile │    │    VPS      │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                  │                   │
+       │                  ▼                   │
+       │         ┌─────────────┐              │
+       │         │ Build & Test│              │
+       │         │  (Docker)   │              │
+       │         └─────────────┘              │
+       │                  │                   │
+       │                  ▼                   │
+       └────────▶ Auto-deploy on push ◀───────┘
+```
+
+### Dockerfile
+
+```dockerfile
+# ========================================
+# STAGE 1: BUILD & TEST
+# ========================================
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+
+# Ejecutar tests
+RUN mvn test
+
+# Compilar
+RUN mvn clean package -DskipTests
+
+# ========================================
+# STAGE 2: RUNTIME
+# ========================================
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+---
+
+## 🏠 Infraestructura y Hosting
+
+### Arquitectura de Infraestructura
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         INTERNET                                 │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     CLOUDFLARE DNS                               │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  *.pakal.solutions  →  5.78.90.187 (Hetzner VPS)        │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    HETZNER VPS (CCX13)                          │
+│                   Hillsboro, OR (US West)                       │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  2 vCPU │ 8 GB RAM │ 80 GB SSD │ $14.49/mo               │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                    COOLIFY                                 │  │
+│  │  ┌─────────────┐  ┌────────────┐  ┌─────────────┐        │  │
+│  │  │  Task API   │  │ Prometheus │  │   Grafana   │        │  │
+│  │  │   :8080     │  │   :9090    │  │   :3000     │        │  │
+│  │  └─────────────┘  └────────────┘  └─────────────┘        │  │
+│  │                          │                                │  │
+│  │                    TRAEFIK (SSL)                          │  │
+│  │                  Let's Encrypt                            │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    RAILWAY (PostgreSQL)                          │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  PostgreSQL Database                                       │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Servicios y URLs
+
+| Servicio | URL | Puerto Interno |
+|----------|-----|----------------|
+| **Task API** | https://tasks.pakal.solutions | 8080 |
+| **Prometheus** | https://prometheus.pakal.solutions | 9090 |
+| **Grafana** | https://grafana.pakal.solutions | 3000 |
+| **Swagger UI** | https://tasks.pakal.solutions/swagger-ui.html | 8080 |
+
+### Configuración DNS (Cloudflare)
+
+| Type | Name | Content | Proxy |
+|------|------|---------|-------|
+| A | * | 5.78.90.187 | DNS only |
+| A | pakal.solutions | 5.78.90.187 | DNS only |
+
+> ⚠️ **Importante:** El proxy de Cloudflare debe estar desactivado (DNS only) para que Coolify/Traefik genere los certificados SSL con Let's Encrypt.
+
+---
+
+## 📊 Monitoreo y Observabilidad
+
+### Stack de Monitoreo
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Task API   │────▶│ Prometheus  │────▶│   Grafana   │
+│  /actuator/ │     │  scrape     │     │  dashboard  │
+│  prometheus │     │  cada 5s    │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Métricas Disponibles
+
+| Categoría | Métricas |
+|-----------|----------|
+| **JVM** | Heap Memory, Non-Heap, GC, Threads |
+| **HTTP** | Request Count, Response Time, Status Codes |
+| **HikariCP** | Active Connections, Idle, Pending |
+| **System** | CPU Usage, Load Average |
+| **Logback** | INFO, WARN, ERROR, DEBUG counts |
+
+### Prometheus Configuration
+
+```yaml
+# prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'task-api'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['tasks.pakal.solutions:443']
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+```
+
+### Grafana Dashboard
+
+Se utiliza el dashboard **Spring Boot APM** (ID: 12900) que incluye:
+
+- Basic Statistics (Uptime, Heap Used, Non-Heap)
+- CPU Usage & Load Average
+- JVM Memory (Eden, Old Gen, Survivor Space)
+- HikariCP Connection Pool
+- HTTP Request Statistics
+- Logback Statistics
+
+**Acceso a Grafana:**
+- URL: https://grafana.pakal.solutions
+- Usuario: admin
+- Password: (configurado en variables de entorno)
+
+---
+
+## 🚨 Alertas
+
+### Configuración de Alertas con Telegram
+
+El sistema está configurado para enviar alertas a Telegram cuando:
+- El servicio Task API se cae
+- Uso de memoria supera el 80%
+- Errores HTTP 5xx aumentan
+
+### Configuración del Bot de Telegram
+
+1. Crear bot con @BotFather
+2. Obtener token del bot
+3. Obtener Chat ID
+4. Configurar en Grafana → Alerting → Contact Points
+
+### Reglas de Alerta Configuradas
+
+| Alerta | Condición | Severidad |
+|--------|-----------|-----------|
+| Task API Down | `up{job="task-api"} == 0` | Critical |
+| High Memory Usage | `jvm_memory_used > 80%` | Warning |
+| HTTP 5xx Errors | `rate(http_5xx) > 0.1` | Warning |
 
 ---
 
@@ -629,13 +696,47 @@ El proyecto utiliza **Azure Pipelines** para integración y despliegue continuo.
 | Spring Boot | 4.0.0 | Framework principal |
 | Spring Data JPA | 4.0.x | Acceso a datos |
 | Hibernate | 7.x | ORM |
-| **Azure SQL Server** | 17.x | **Base de datos (producción)** |
+| **PostgreSQL** | 15.x | **Base de datos (producción)** |
 | H2 Database | 2.x | Base de datos (desarrollo/tests) |
 | SpringDoc OpenAPI | 2.8.0 | Documentación Swagger |
+| Micrometer | 1.x | Métricas y observabilidad |
 | HikariCP | 7.x | Connection Pool |
 | Maven | 3.9+ | Gestión de dependencias |
-| Azure App Service | - | Hosting |
-| Azure Pipelines | - | CI/CD |
+| Docker | 20.x+ | Contenedorización |
+| **Coolify** | 4.x | **Plataforma de deployment** |
+| **Hetzner** | CCX13 | **VPS Hosting** |
+| **Prometheus** | latest | **Recolección de métricas** |
+| **Grafana** | latest | **Visualización y dashboards** |
+| **Cloudflare** | - | **DNS y protección** |
+| **Railway** | - | **PostgreSQL hosting** |
+| **Telegram** | - | **Alertas y notificaciones** |
+
+---
+
+## 🔄 Migración Realizada
+
+### De Azure a Self-Hosted
+
+| Componente | Antes | Después |
+|------------|-------|---------|
+| **Repositorio** | Azure DevOps | GitHub |
+| **CI/CD** | Azure Pipelines | Coolify + Docker |
+| **Hosting** | Azure App Service | Hetzner VPS |
+| **Base de datos** | Azure SQL Server | PostgreSQL (Railway) |
+| **SSL** | Azure managed | Let's Encrypt (Traefik) |
+| **Monitoreo** | Application Insights | Prometheus + Grafana |
+| **Alertas** | Azure Alerts | Grafana + Telegram |
+| **DNS** | Azure DNS | Cloudflare |
+
+### Beneficios de la Migración
+
+| Aspecto | Beneficio |
+|---------|-----------|
+| **Costo** | ~$15/mes vs ~$50+/mes en Azure |
+| **Control** | Full control sobre la infraestructura |
+| **Flexibilidad** | Fácil agregar más servicios |
+| **Monitoreo** | Dashboards personalizados con Grafana |
+| **Deployment** | Auto-deploy en cada push a main |
 
 ---
 
@@ -650,11 +751,24 @@ mvn test -Dtest=TaskControllerTest
 
 # Ejecutar tests de integración
 mvn test -Dtest=TaskControllerIntegrationTest
+
+# Ver reporte de cobertura
+mvn jacoco:report
 ```
 
 ---
 
 ## 🔐 Consideraciones de Seguridad
+
+### Variables de Entorno (nunca en código)
+
+```bash
+SPRING_DATASOURCE_URL=jdbc:postgresql://...
+SPRING_DATASOURCE_USERNAME=...
+SPRING_DATASOURCE_PASSWORD=...
+SPRING_PROFILES_ACTIVE=prod
+GF_SECURITY_ADMIN_PASSWORD=...
+```
 
 ### ddl-auto por Ambiente
 
@@ -662,7 +776,7 @@ mvn test -Dtest=TaskControllerIntegrationTest
 |----------|-------|-------|
 | **Desarrollo** | `create-drop` | Reinicia BD en cada ejecución |
 | **Testing** | `create-drop` | Tests con BD limpia |
-| **Producción** | `none` | ⚠️ NUNCA modificar schema automáticamente |
+| **Producción** | `update` | Solo actualiza schema |
 
 ---
 
@@ -670,8 +784,9 @@ mvn test -Dtest=TaskControllerIntegrationTest
 
 **Emmanuel Sandoval Morales**
 
-- Azure DevOps: [sandoval-org/task-api](https://dev.azure.com/sandoval-org/task-api)
-- API URL: [task-api-emmanuel](https://task-api-emmanuel-fqdegpgedaemcxc2.centralus-01.azurewebsites.net)
+- GitHub: [tu-usuario](https://github.com/tu-usuario)
+- Portfolio: [pakal.solutions](https://pakal.solutions)
+- API URL: [tasks.pakal.solutions](https://tasks.pakal.solutions)
 
 ---
 
